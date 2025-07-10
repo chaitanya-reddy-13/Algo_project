@@ -1,39 +1,57 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Problem, TestCase, Submission
+from .models import Submission, Problem
+
+# ✅ Register Serializer
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'password']
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data.get('email', ''),
+            password=validated_data['password']
+        )
+        return user
 
 
+# ✅ User Serializer
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email']
 
 
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password']
-
-    def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
-        return user
-
-
+# ✅ Problem Serializer
 class ProblemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Problem
-        fields = '__all__'
+        fields = ['id', 'title', 'description', 'difficulty']
 
 
-class TestCaseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TestCase
-        fields = '__all__'
-
-
+# ✅ Submission Serializer
 class SubmissionSerializer(serializers.ModelSerializer):
+    custom_input = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = Submission
-        fields = '__all__'
+        fields = [
+            'id',
+            'problem',
+            'code',
+            'language',
+            'verdict',
+            'sample_output',
+            'expected_output',
+            'error_message',
+            'custom_input',
+            'created_at',
+        ]
+        read_only_fields = [
+            'id', 'verdict', 'sample_output',
+            'expected_output', 'error_message', 'created_at'
+        ]

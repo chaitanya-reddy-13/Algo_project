@@ -49,6 +49,9 @@ class Submission(models.Model):
     sample_output = models.TextField(blank=True, null=True)
     expected_output = models.TextField(blank=True, null=True)
     error_message = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    language = models.CharField(max_length=10, choices=[("python", "Python"), ("cpp", "C++")], default="python")
+
 
     def __str__(self):
         return f"{self.user.username} - {self.problem.title} - {self.verdict}"
