@@ -1,7 +1,7 @@
 // src/pages/Submit.js
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../utils/axiosInstance";
 import Editor from "@monaco-editor/react";
 
 const Submit = () => {
@@ -16,16 +16,16 @@ const Submit = () => {
 
   const token = localStorage.getItem("access");
 
-  // Load problem details
   useEffect(() => {
     if (!token) {
-      alert("Please log in first.");
+      alert("Please login first.");
       navigate("/login");
       return;
     }
 
+    // ✅ Corrected path: no leading "/api/"
     axios
-      .get(`/api/problems/${id}/`)
+      .get(`problems/${id}/`)
       .then((res) => setProblem(res.data))
       .catch((err) => {
         console.error("Error loading problem:", err);
@@ -33,65 +33,47 @@ const Submit = () => {
       });
   }, [id, token, navigate]);
 
-  // Handle code execution (Run)
   const handleRun = async () => {
     try {
-      const res = await axios.post(
-        "/api/submissions/",
-        {
-          problem: id,
-          code,
-          language,
-          custom_input: customInput,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.post("submit/", {
+        problem: id,
+        code,
+        language,
+        custom_input: customInput,
+      });
       setOutput(res.data.sample_output || res.data.error_message);
     } catch (err) {
-      console.error("Run error:", err.response?.data || err.message);
-      alert("Error running code: " + (err.response?.data?.error || "Unknown error"));
+      const error = err.response?.data?.error || err.message || "An unknown error occurred.";
+      setOutput(`Error: ${error}`);
+      console.error("Run error:", error);
     }
   };
 
-  // Handle final submission (Submit)
   const handleSubmit = async () => {
     try {
-      const res = await axios.post(
-        "/api/submissions/",
-        {
-          problem: id,
-          code,
-          language,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setOutput(`Verdict: ${res.data.verdict}\nOutput: ${res.data.sample_output}`);
+      const res = await axios.post("submit/", {
+        problem: id,
+        code,
+        language,
+      });
+
+      if (res.data.verdict === "Runtime Error" || res.data.verdict === "Syntax Error") {
+        setOutput(`Verdict: ${res.data.verdict}\nError: ${res.data.error_message}`);
+      } else {
+        setOutput(`Verdict: ${res.data.verdict}\nOutput: ${res.data.sample_output}`);
+      }
     } catch (err) {
-      console.error("Submit error:", err.response?.data || err.message);
-      alert("Error submitting code: " + (err.response?.data?.error || "Unknown error"));
+      const error = err.response?.data?.error || err.message || "An unknown error occurred.";
+      setOutput(`Error: ${error}`);
+      console.error("Submit error:", error);
     }
   };
 
-  // Handle AI hint request
   const handleHint = async () => {
     try {
-      const res = await axios.post(
-        "/api/ai-hint/",
-        { problem_id: id },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.post("ai/hint/", {
+        problem_id: id,
+      });
       setHint(res.data.hint);
     } catch (err) {
       console.error("Hint error:", err.response?.data || err.message);

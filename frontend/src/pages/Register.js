@@ -1,29 +1,28 @@
-// src/pages/Register.js
 import React, { useState } from "react";
-import axios from "axios";
+import axios from "../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("/api/register/", { username, email, password });
-      alert("Registration successful! Please login.");
+      await axios.post("register/", { email, username, password });
+      alert("Registration successful. Please log in.");
       navigate("/login");
     } catch (err) {
-      alert("Registration failed. " + (err.response?.data?.error || ""));
+      alert("Registration failed");
     }
   };
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-4">
       <h2>Register</h2>
-      <form onSubmit={handleRegister}>
+      <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label>Username</label>
           <input
@@ -34,7 +33,6 @@ const Register = () => {
             required
           />
         </div>
-
         <div className="mb-3">
           <label>Email</label>
           <input
@@ -45,7 +43,6 @@ const Register = () => {
             required
           />
         </div>
-
         <div className="mb-3">
           <label>Password</label>
           <input
@@ -56,8 +53,7 @@ const Register = () => {
             required
           />
         </div>
-
-        <button type="submit" className="btn btn-primary">Register</button>
+        <button className="btn btn-primary" type="submit">Register</button>
       </form>
     </div>
   );

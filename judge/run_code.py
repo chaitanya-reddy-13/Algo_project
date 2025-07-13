@@ -4,6 +4,7 @@ import os
 import shutil
 
 def run_python_code(code: str, input_data: str, timeout: int = 2):
+    
     return _run_code_generic(code, input_data, timeout, language="python")
 
 def run_cpp_code(code: str, input_data: str, timeout: int = 2):
@@ -11,12 +12,13 @@ def run_cpp_code(code: str, input_data: str, timeout: int = 2):
 
 
 def _run_code_generic(code: str, input_data: str, timeout: int, language: str):
+    
     run_id = uuid.uuid4().hex
     run_dir = os.path.join("temp_codes", run_id)
     os.makedirs(run_dir, exist_ok=True)
-
     # Choose filenames based on language
     code_file = "solution.py" if language == "python" else "main.cpp"
+    
     with open(os.path.join(run_dir, code_file), "w") as f:
         f.write(code)
     with open(os.path.join(run_dir, "input.txt"), "w") as f:
@@ -24,7 +26,6 @@ def _run_code_generic(code: str, input_data: str, timeout: int, language: str):
 
     # Choose Docker image
     docker_image = "code-runner" if language == "python" else "cpp-runner"
-
     try:
         result = subprocess.run(
             [
@@ -38,10 +39,24 @@ def _run_code_generic(code: str, input_data: str, timeout: int, language: str):
             timeout=timeout
         )
 
+        stderr_output = result.stderr.decode().strip()
+        if "docker" in stderr_output and "not recognized" in stderr_output:
+            return {
+                "success": False,
+                "output": "",
+                "error": "Docker is not installed or not in the system's PATH."
+            }
+        if "Cannot connect to the Docker daemon" in stderr_output or "The system cannot find the file specified" in stderr_output:
+            return {
+                "success": False,
+                "output": "",
+                "error": "Could not connect to Docker. Please ensure Docker Desktop is running."
+            }
+
         return {
             "success": result.returncode == 0,
             "output": result.stdout.decode().strip(),
-            "error": result.stderr.decode().strip()
+            "error": stderr_output
         }
 
     except subprocess.TimeoutExpired:
@@ -49,6 +64,12 @@ def _run_code_generic(code: str, input_data: str, timeout: int, language: str):
             "success": False,
             "output": "",
             "error": "Time Limit Exceeded"
+        }
+    except FileNotFoundError:
+        return {
+            "success": False,
+            "output": "",
+            "error": "Docker is not installed or not in the system's PATH."
         }
 
     finally:

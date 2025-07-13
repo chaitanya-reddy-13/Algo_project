@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Submission, Problem
+from .models import Submission, Problem, Contest
 
 # ✅ Register Serializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -55,3 +55,12 @@ class SubmissionSerializer(serializers.ModelSerializer):
             'id', 'verdict', 'sample_output',
             'expected_output', 'error_message', 'created_at'
         ]
+    def create(self, validated_data):
+        validated_data.pop('custom_input', None)
+        return super().create(validated_data)
+class ContestSerializer(serializers.ModelSerializer):
+    problems = ProblemSerializer(many=True)
+
+    class Meta:
+        model = Contest
+        fields = ['id', 'name', 'start_time', 'duration_minutes', 'problems']

@@ -8,17 +8,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count, Q
 from .run_code import run_python_code, run_cpp_code
-from .models import TestCase, Problem, Submission
+from .models import TestCase, Problem, Submission, Contest
 from .serializers import (
     RegisterSerializer,
     UserSerializer,
     ProblemSerializer,
     SubmissionSerializer,
+    ContestSerializer,
 )
 import re
 import openai
 import os
-
 
 # ✅ Register API
 class RegisterView(generics.CreateAPIView):
@@ -27,7 +27,7 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
 
-# ✅ Login API (via email)
+# ✅ Login API using email & password
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -37,19 +37,19 @@ class LoginView(APIView):
 
         try:
             user = User.objects.get(email=email)
-            user = authenticate(username=user.username, password=password)
         except User.DoesNotExist:
-            user = None
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if user:
+        user = authenticate(username=user.username, password=password)
+        if user is not None:
             refresh = RefreshToken.for_user(user)
             return Response({
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
                 "user": UserSerializer(user).data
             })
-
-        return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 # ✅ List all problems
@@ -59,7 +59,7 @@ class ProblemListView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
 
 
-# ✅ Get a specific problem
+# ✅ Get specific problem
 class ProblemDetailView(generics.RetrieveAPIView):
     queryset = Problem.objects.all()
     serializer_class = ProblemSerializer
@@ -67,78 +67,37 @@ class ProblemDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
 
 
-# ✅ Submit code and auto-evaluate verdict
+# ✅ Submit code and get verdict
 class SubmitCodeView(generics.CreateAPIView):
     queryset = Submission.objects.all()
     serializer_class = SubmissionSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        user = self.request.user
-        code = self.request.data.get("code")
-        problem_id = self.request.data.get("problem")
-        language = self.request.data.get("language", "python")
-        custom_input = self.request.data.get("custom_input", None)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        try:
-            problem = Problem.objects.get(id=problem_id)
-        except Problem.DoesNotExist:
-            return Response({"error": "Problem not found"}, status=status.HTTP_404_NOT_FOUND)
+        user = request.user
+        code = serializer.validated_data["code"]
+        problem = serializer.validated_data["problem"]
+        language = serializer.validated_data.get("language", "python")
+        custom_input = serializer.validated_data.get("custom_input")
 
-        test_cases = TestCase.objects.filter(problem=problem)
+        run_func = run_cpp_code if language == "cpp" else run_python_code
 
-        all_passed = True
-        error_message = ""
-        sample_output = ""
-        expected_output = ""
-
-        # ✅ Case 1: Run with custom input (RUN)
+        # ✅ Custom Run
         if custom_input:
-            result = run_cpp_code(code, custom_input) if language == "cpp" else run_python_code(code, custom_input)
-
+            result = run_func(code, custom_input)
+            result["output"] = result["output"].replace("\nHI", "")
             if not result["success"]:
-                verdict = "Runtime Error"
-                error_message = result["error"]
-            else:
-                verdict = "Custom Run"
-                sample_output = result["output"]
+                return Response({"error": result["error"]}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"sample_output": result["output"]}, status=status.HTTP_200_OK)
 
-            serializer.save(
-                user=user,
-                verdict=verdict,
-                sample_output=sample_output,
-                expected_output="",
-                error_message=error_message,
-                language=language
-            )
-            return
+        # ✅ Submission: Evaluate against all test cases
+        verdict, sample_output, expected_output, error_message = self.evaluate_testcases(problem, code, run_func)
 
-        # ✅ Case 2: Run against testcases (SUBMIT)
-        for test_case in test_cases:
-            result = run_cpp_code(code, test_case.input_data) if language == "cpp" else run_python_code(code, test_case.input_data)
-
-            if not result["success"]:
-                all_passed = False
-                verdict = "Runtime Error"
-                error_message = result["error"]
-                sample_output = result["output"]
-                expected_output = test_case.expected_output
-                break
-
-            actual = re.sub(r'\r\n?', '\n', result["output"]).strip()
-            expected = re.sub(r'\r\n?', '\n', test_case.expected_output).strip()
-
-            if actual != expected:
-                all_passed = False
-                verdict = "Wrong Answer"
-                sample_output = result["output"]
-                expected_output = test_case.expected_output
-                break
-
-        if all_passed:
-            verdict = "Accepted"
-
-        serializer.save(
+        # ✅ Save submission to DB
+        submission = serializer.save(
             user=user,
             verdict=verdict,
             sample_output=sample_output,
@@ -146,9 +105,28 @@ class SubmitCodeView(generics.CreateAPIView):
             error_message=error_message,
             language=language
         )
+        return Response(self.get_serializer(submission).data, status=status.HTTP_201_CREATED)
+
+    def evaluate_testcases(self, problem, code, run_func):
+        test_cases = TestCase.objects.filter(problem=problem)
+        all_passed = True
+
+        for test_case in test_cases:
+            result = run_func(code, test_case.input_data)
+            result["output"] = result["output"].replace("\nHI", "")
+            if not result["success"]:
+                return "Runtime Error", result["output"], test_case.expected_output, result["error"]
+
+            actual = re.sub(r'\r\n?', '\n', result["output"]).strip()
+            expected = re.sub(r'\r\n?', '\n', test_case.expected_output).strip()
+
+            if actual != expected:
+                return "Wrong Answer", result["output"], test_case.expected_output, ""
+
+        return "Accepted", "", "", ""
 
 
-# ✅ List all submissions for logged-in user
+# ✅ List all submissions for current user
 class SubmissionListView(generics.ListAPIView):
     serializer_class = SubmissionSerializer
     permission_classes = [IsAuthenticated]
@@ -166,7 +144,7 @@ class SubmissionDetailView(generics.RetrieveAPIView):
         return Submission.objects.filter(user=self.request.user)
 
 
-# 🏆 Leaderboard
+# 🏆 Leaderboard API
 class LeaderboardView(APIView):
     def get(self, request):
         users = (
@@ -175,8 +153,7 @@ class LeaderboardView(APIView):
             )
             .order_by('-accepted_count')[:10]
         )
-
-        data = [{"username": user.username, "accepted_count": user.accepted_count} for user in users]
+        data = [{"username": u.username, "accepted_count": u.accepted_count} for u in users]
         return Response(data)
 
 
@@ -208,3 +185,14 @@ def get_ai_hint(request):
         return Response({"hint": response.choices[0].message["content"]})
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+class ContestListView(generics.ListAPIView):
+    queryset = Contest.objects.all()
+    serializer_class = ContestSerializer
+    permission_classes = [permissions.AllowAny]
+
+class ContestDetailView(generics.RetrieveAPIView):
+    queryset = Contest.objects.all()
+    serializer_class = ContestSerializer
+    lookup_field = 'id'
+    permission_classes = [permissions.AllowAny]
+

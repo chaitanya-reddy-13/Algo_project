@@ -1,22 +1,20 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../utils/axiosInstance";
 
 const Submissions = () => {
   const [submissions, setSubmissions] = useState([]);
 
   useEffect(() => {
-    axios.get("/api/submissions/", {
-      headers: { Authorization: `Bearer ${localStorage.getItem("access")}` },
-    }).then(res => setSubmissions(res.data));
+    axios.get("submissions/").then(res => setSubmissions(res.data));
   }, []);
 
   return (
     <div className="container mt-4">
-      <h2>Your Submissions</h2>
+      <h2>My Submissions</h2>
       <ul className="list-group">
-        {submissions.map(sub => (
-          <li key={sub.id} className="list-group-item">
-            Problem ID: {sub.problem}, Verdict: {sub.verdict}, Language: {sub.language}
+        {submissions.map((submission) => (
+          <li className="list-group-item" key={submission.id}>
+            <strong>Problem:</strong> {submission.problem_title} | <strong>Verdict:</strong> {submission.verdict} | <strong>Language:</strong> {submission.language}
           </li>
         ))}
       </ul>

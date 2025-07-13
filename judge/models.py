@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.utils import timezone
+from datetime import timedelta
 
 class Problem(models.Model):
     DIFFICULTY_CHOICES = [
@@ -55,3 +56,14 @@ class Submission(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.problem.title} - {self.verdict}"
+class Contest(models.Model):
+    name = models.CharField(max_length=255)
+    start_time = models.DateTimeField()
+    duration_minutes = models.IntegerField(default=90)
+    problems = models.ManyToManyField(Problem, related_name="contests")
+
+    def __str__(self):
+        return self.name
+
+    def end_time(self):
+        return self.start_time + timedelta(minutes=self.duration_minutes)

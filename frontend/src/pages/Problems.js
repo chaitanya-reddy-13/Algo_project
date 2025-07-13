@@ -1,13 +1,18 @@
 // src/pages/Problems.js
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
+import axios from "../utils/axiosInstance";
 
 const Problems = () => {
   const [problems, setProblems] = useState([]);
 
   useEffect(() => {
-    axios.get("/api/problems/").then(res => setProblems(res.data));
+    axios.get("problems/")
+      .then(res => setProblems(res.data))
+      .catch(err => {
+        console.error("Error fetching problems:", err);
+        alert("Failed to load problems");
+      });
   }, []);
 
   return (

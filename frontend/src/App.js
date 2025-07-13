@@ -10,6 +10,8 @@ import Submissions from "./pages/Submissions";
 import Leaderboard from "./pages/Leaderboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register"; // ✅ Add this import
+import ContestList from "./pages/ContestList";
+import ContestDetail from "./pages/ContestDetail";
 
 const App = () => {
   return (
@@ -24,6 +26,8 @@ const App = () => {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} /> {/* ✅ Add this route */}
+          <Route path="/contests" element={<ContestList />} />
+          <Route path="/contests/:id" element={<ContestDetail />} />
       </Routes>
     </Router>
   );

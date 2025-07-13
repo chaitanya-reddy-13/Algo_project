@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
+import { useParams, Link } from "react-router-dom";
+import axios from "../utils/axiosInstance";
 
 const ProblemDetail = () => {
   const { id } = useParams();
   const [problem, setProblem] = useState(null);
 
   useEffect(() => {
-    axios.get(`/api/problems/${id}/`).then(res => setProblem(res.data));
+    axios.get(`problems/${id}/`).then(res => setProblem(res.data));
   }, [id]);
 
   return (
@@ -15,7 +15,9 @@ const ProblemDetail = () => {
       {problem ? (
         <>
           <h2>{problem.title}</h2>
+          <p><strong>Difficulty:</strong> {problem.difficulty}</p>
           <p>{problem.description}</p>
+          <Link to={`/submit/${problem.id}`} className="btn btn-primary">Submit Solution</Link>
         </>
       ) : (
         <p>Loading...</p>

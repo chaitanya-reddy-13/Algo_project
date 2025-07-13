@@ -1,6 +1,0 @@
-FROM gcc:latest
-
-WORKDIR /app/user
-
-# Default command: compile and run the C++ code
-CMD g++ main.cpp -o main && ./main < input.txt
