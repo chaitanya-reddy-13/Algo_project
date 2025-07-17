@@ -1,4 +1,3 @@
-// src/App.js
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -9,9 +8,11 @@ import Submit from "./pages/Submit";
 import Submissions from "./pages/Submissions";
 import Leaderboard from "./pages/Leaderboard";
 import Login from "./pages/Login";
-import Register from "./pages/Register"; // ✅ Add this import
+import Register from "./pages/Register";
 import ContestList from "./pages/ContestList";
 import ContestDetail from "./pages/ContestDetail";
+
+
 
 const App = () => {
   return (
@@ -21,13 +22,15 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/problems" element={<Problems />} />
         <Route path="/problems/:id" element={<ProblemDetail />} />
-        <Route path="/submit/:id" element={<Submit />} />
+        <Route path="/submit/:problemId" element={<Submit />} /> {/* ✅ Normal Submit (untouched) */}
         <Route path="/submissions" element={<Submissions />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} /> {/* ✅ Add this route */}
-          <Route path="/contests" element={<ContestList />} />
-          <Route path="/contests/:id" element={<ContestDetail />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/contests" element={<ContestList />} />
+        <Route path="/contests/:id" element={<ContestDetail />} />
+        
+        
       </Routes>
     </Router>
   );

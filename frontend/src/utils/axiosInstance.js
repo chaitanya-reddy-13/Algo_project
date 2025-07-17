@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "/api/", // ✅ Relative path with proxy
+  baseURL: process.env.REACT_APP_API_BASE_URL || "/api/", // Use environment variable for API base URL
 });
 
 instance.interceptors.request.use(
@@ -29,7 +29,7 @@ instance.interceptors.response.use(
     ) {
       originalRequest._retry = true;
       try {
-        const res = await axios.post("/api/token/refresh/", { refresh });
+        const res = await instance.post("/api/token/refresh/", { refresh });
         localStorage.setItem("access", res.data.access);
         originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
         return axios(originalRequest);

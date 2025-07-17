@@ -52,6 +52,7 @@ class Submission(models.Model):
     error_message = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     language = models.CharField(max_length=10, choices=[("python", "Python"), ("cpp", "C++")], default="python")
+    contest = models.ForeignKey('Contest', on_delete=models.SET_NULL, null=True, blank=True)
 
 
     def __str__(self):

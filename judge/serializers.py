@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Submission, Problem, Contest
+from .models import Submission, Problem, Contest, TestCase
 
 # ✅ Register Serializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -26,22 +26,32 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email']
 
 
+class TestCaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TestCase
+        fields = ['input_data', 'expected_output', 'is_sample']
+
+
 # ✅ Problem Serializer
 class ProblemSerializer(serializers.ModelSerializer):
+    testcases = TestCaseSerializer(many=True, read_only=True)
+
     class Meta:
         model = Problem
-        fields = ['id', 'title', 'description', 'difficulty']
+        fields = ['id', 'title', 'description', 'difficulty', 'testcases']
 
 
 # ✅ Submission Serializer
 class SubmissionSerializer(serializers.ModelSerializer):
     custom_input = serializers.CharField(write_only=True, required=False)
+    problem_title = serializers.CharField(source='problem.title', read_only=True)
 
     class Meta:
         model = Submission
         fields = [
             'id',
             'problem',
+            'problem_title',
             'code',
             'language',
             'verdict',
@@ -52,7 +62,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             'created_at',
         ]
         read_only_fields = [
-            'id', 'verdict', 'sample_output',
+            'id', 'problem_title', 'verdict', 'sample_output',
             'expected_output', 'error_message', 'created_at'
         ]
     def create(self, validated_data):

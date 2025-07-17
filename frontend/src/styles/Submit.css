@@ -1,0 +1,68 @@
+/* frontend/src/styles/Submit.css */
+
+.submit-container {
+  display: flex;
+  height: 100vh;
+  background-color: var(--background-light);
+}
+
+.problem-details {
+  flex: 1;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+}
+
+.editor-container {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-dark);
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.editor-header .language-selector {
+  width: 150px;
+  border-color: var(--border-color);
+}
+
+.editor-main {
+  flex: 1;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.output-container {
+  margin-top: 1rem;
+  background-color: #ffffff;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  min-height: 100px;
+  color: var(--text-dark);
+}
+
+.button-container {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.custom-input-container {
+  margin-top: 1rem;
+}
+
+.form-control {
+  background-color: var(--background-light);
+  color: var(--text-dark);
+  border-color: var(--border-color);
+}

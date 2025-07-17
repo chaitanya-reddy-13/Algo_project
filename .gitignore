@@ -19,6 +19,7 @@ dist/
 db.sqlite3
 media/
 staticfiles/
+judge/migrations/*.py
 
 # React
 frontend/node_modules/
@@ -29,3 +30,6 @@ frontend/build/
 
 # Environment
 .env
+
+# Temporary code files
+temp_codes/

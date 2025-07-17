@@ -1,16 +1,28 @@
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+# ✅ Load environment variables from .env
+load_dotenv()
+
+# Optional: print to confirm it’s loaded (remove later)
+print("Loaded Gemini Key:", os.getenv("GEMINI_API_KEY"))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-gb1!=p!jl*w-a_a4h40=g8lod@d4nn8p)!&j_dyr2%0r9tb72e'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-gb1!=p!jl*w-a_a4h40=g8lod@d4nn8p)!&j_dyr2%0r9tb72e') # Fallback for development
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = []  # Add 'localhost', '127.0.0.1', etc., if needed
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',') if os.getenv('DJANGO_ALLOWED_HOSTS') else []
+
+# CORS Settings
+CORS_ALLOW_ALL_ORIGINS = False # Set to False for production
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if os.getenv('CORS_ALLOWED_ORIGINS') else []
+CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 INSTALLED_APPS = [
@@ -104,3 +116,17 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# JWT Config
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+}
+
+# ✅ Optional: access Gemini key anywhere in Django like this:
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")

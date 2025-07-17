@@ -1,0 +1,27 @@
+/* styles/Problems.css */
+.problem-table {
+  width: 100%;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.problem-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 120px 120px;
+  padding: 12px 16px;
+  align-items: center;
+  border-bottom: 1px solid #dee2e6;
+  background-color: #fff;
+  transition: background 0.2s;
+}
+
+.problem-row:hover {
+  background-color: #f8f9fa;
+}
+
+.problem-header {
+  font-weight: bold;
+  background-color: #f1f3f5;
+  border-bottom: 2px solid #dee2e6;
+}

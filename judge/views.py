@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Min
 from .run_code import run_python_code, run_cpp_code
 from .models import TestCase, Problem, Submission, Contest
 from .serializers import (
@@ -17,7 +17,6 @@ from .serializers import (
     ContestSerializer,
 )
 import re
-import openai
 import os
 
 # ✅ Register API
@@ -82,6 +81,16 @@ class SubmitCodeView(generics.CreateAPIView):
         problem = serializer.validated_data["problem"]
         language = serializer.validated_data.get("language", "python")
         custom_input = serializer.validated_data.get("custom_input")
+        contest_id = self.kwargs.get('contest_id')
+        if not contest_id:
+            contest_id = self.kwargs.get('id')
+
+        contest = None
+        if contest_id:
+            try:
+                contest = Contest.objects.get(id=contest_id)
+            except Contest.DoesNotExist:
+                return Response({"error": "Contest not found"}, status=status.HTTP_404_NOT_FOUND)
 
         run_func = run_cpp_code if language == "cpp" else run_python_code
 
@@ -99,6 +108,8 @@ class SubmitCodeView(generics.CreateAPIView):
         # ✅ Save submission to DB
         submission = serializer.save(
             user=user,
+            problem=problem,
+            contest=contest, # Save contest if present
             verdict=verdict,
             sample_output=sample_output,
             expected_output=expected_output,
@@ -110,10 +121,14 @@ class SubmitCodeView(generics.CreateAPIView):
     def evaluate_testcases(self, problem, code, run_func):
         test_cases = TestCase.objects.filter(problem=problem)
         all_passed = True
+        error_details = {"input": "", "expected_output": "", "actual_output": "", "message": ""}
 
         for test_case in test_cases:
             result = run_func(code, test_case.input_data)
-            result["output"] = result["output"].replace("\nHI", "")
+            result["output"] = result["output"].replace("\nHI", "") # Clean up any lingering HI
+
+            if "Time Limit Exceeded" in result["error"]:
+                return "Time Limit Exceeded", "", "", result["error"]
             if not result["success"]:
                 return "Runtime Error", result["output"], test_case.expected_output, result["error"]
 
@@ -121,7 +136,10 @@ class SubmitCodeView(generics.CreateAPIView):
             expected = re.sub(r'\r\n?', '\n', test_case.expected_output).strip()
 
             if actual != expected:
-                return "Wrong Answer", result["output"], test_case.expected_output, ""
+                error_details["input"] = test_case.input_data
+                error_details["expected_output"] = test_case.expected_output
+                error_details["actual_output"] = result["output"]
+                return "Wrong Answer", result["output"], test_case.expected_output, f"Input: {error_details["input"]}\nExpected: {error_details["expected_output"]}\nActual: {error_details["actual_output"]}"
 
         return "Accepted", "", "", ""
 
@@ -157,34 +175,6 @@ class LeaderboardView(APIView):
         return Response(data)
 
 
-# 🤖 AI Hint Generator
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def get_ai_hint(request):
-    problem_id = request.data.get("problem_id")
-    if not problem_id:
-        return Response({"error": "Problem ID is required."}, status=400)
-
-    try:
-        problem = Problem.objects.get(id=problem_id)
-    except Problem.DoesNotExist:
-        return Response({"error": "Problem not found."}, status=404)
-
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You're a helpful coding assistant."},
-                {"role": "user", "content": f"Give a coding hint for this problem:\n{problem.description}"}
-            ],
-            temperature=0.5,
-            max_tokens=150
-        )
-        return Response({"hint": response.choices[0].message["content"]})
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
 class ContestListView(generics.ListAPIView):
     queryset = Contest.objects.all()
     serializer_class = ContestSerializer
@@ -195,4 +185,47 @@ class ContestDetailView(generics.RetrieveAPIView):
     serializer_class = ContestSerializer
     lookup_field = 'id'
     permission_classes = [permissions.AllowAny]
+
+    def get_object(self):
+        try:
+            return super().get_object()
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            raise
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ContestEnterView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        try:
+            contest = Contest.objects.get(id=id)
+            serializer = ContestSerializer(contest)
+            return Response(serializer.data)
+        except Contest.DoesNotExist:
+            return Response({"error": "Contest not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class ContestProblemsView(generics.ListAPIView):
+    serializer_class = ProblemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        contest_id = self.kwargs['id']
+        try:
+            contest = Contest.objects.get(id=contest_id)
+            return contest.problems.all()
+        except Contest.DoesNotExist:
+            return Problem.objects.none()
+
+
 
