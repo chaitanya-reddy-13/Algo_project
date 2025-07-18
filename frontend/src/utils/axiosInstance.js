@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://65.0.127.55/", // Use environment variable for API base URL
+  baseURL: "https://65.0.127.55/", // Use environment variable for API base URL
 });
 
 instance.interceptors.request.use(
@@ -29,7 +29,7 @@ instance.interceptors.response.use(
     ) {
       originalRequest._retry = true;
       try {
-        const res = await instance.post("/api/token/refresh/", { refresh });
+        const res = await axios.post("https://65.0.127.55/api/token/refresh/", { refresh });
         localStorage.setItem("access", res.data.access);
         originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
         return axios(originalRequest);
