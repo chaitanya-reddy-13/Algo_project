@@ -139,7 +139,7 @@ class SubmitCodeView(generics.CreateAPIView):
                 error_details["input"] = test_case.input_data
                 error_details["expected_output"] = test_case.expected_output
                 error_details["actual_output"] = result["output"]
-                return "Wrong Answer", result["output"], test_case.expected_output, f"Input: {error_details["input"]}\nExpected: {error_details["expected_output"]}\nActual: {error_details["actual_output"]}"
+                return "Wrong Answer", result["output"], test_case.expected_output, f"Input: {error_details['input']}\nExpected: {error_details['expected_output']}\nActual: {error_details['actual_output']}"
 
         return "Accepted", "", "", ""
 
