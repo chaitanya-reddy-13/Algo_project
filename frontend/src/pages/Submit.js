@@ -14,15 +14,17 @@ const Submit = () => {
   const [verdictDetails, setVerdictDetails] = useState(null);
 
   useEffect(() => {
-    axios.get(`/problems/${problemId}/`)
-      .then(res => {
-        setProblem(res.data);
-        const firstSample = res.data.testcases.find(tc => tc.is_sample);
-        if (firstSample) {
-          setCustomInput(firstSample.input_data);
-        }
-      })
-      .catch(err => alert("Failed to load problem"));
+    if (problemId) {
+      axios.get(`/problems/${problemId}/`)
+        .then(res => {
+          setProblem(res.data);
+          const firstSample = res.data.testcases.find(tc => tc.is_sample);
+          if (firstSample) {
+            setCustomInput(firstSample.input_data);
+          }
+        })
+        .catch(err => alert("Failed to load problem"));
+    }
   }, [problemId]);
 
   const handleRun = async () => {

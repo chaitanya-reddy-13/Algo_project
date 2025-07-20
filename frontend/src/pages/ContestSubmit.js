@@ -20,16 +20,18 @@ const ContestSubmit = () => {
   const [contestEnded, setContestEnded] = useState(false);
 
   useEffect(() => {
-    // Fetch problem details
-    axios.get(`/problems/${problemId}/`)
-      .then(res => {
-        setProblem(res.data);
-        const firstSample = res.data.testcases.find(tc => tc.is_sample);
-        if (firstSample) {
-          setCustomInput(firstSample.input_data);
-        }
-      })
-      .catch(err => alert("Failed to load problem"));
+    if (problemId) {
+      // Fetch problem details
+      axios.get(`/problems/${problemId}/`)
+        .then(res => {
+          setProblem(res.data);
+          const firstSample = res.data.testcases.find(tc => tc.is_sample);
+          if (firstSample) {
+            setCustomInput(firstSample.input_data);
+          }
+        })
+        .catch(err => alert("Failed to load problem"));
+    }
 
     // Fetch contest details if contestId is present
     if (contestId) {
