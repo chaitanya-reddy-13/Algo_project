@@ -58,7 +58,7 @@ const ContestDetail = () => {
                 <div>
                   <strong>{problem.title}</strong> - <span className="badge bg-secondary">{problem.difficulty}</span>
                 </div>
-                <Link to={`/submit/${problem.id}?contestId=${id}`} className="btn btn-primary">
+                <Link to={`/contests/${id}/problem/${problem.id}/submit`} className="btn btn-primary">
                   Solve
                 </Link>
               </li>

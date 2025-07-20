@@ -14,6 +14,10 @@ import ContestDetail from "./pages/ContestDetail";
 
 
 
+import ContestSubmit from "./pages/ContestSubmit";
+
+
+
 const App = () => {
   return (
     <Router>
@@ -22,7 +26,8 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/problems" element={<Problems />} />
         <Route path="/problems/:id" element={<ProblemDetail />} />
-        <Route path="/submit/:problemId" element={<Submit />} /> {/* ✅ Normal Submit (untouched) */}
+        <Route path="/problem/:problemId/submit" element={<Submit />} />
+        <Route path="/contests/:contestId/problem/:problemId/submit" element={<ContestSubmit />} />
         <Route path="/submissions" element={<Submissions />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/login" element={<Login />} />
