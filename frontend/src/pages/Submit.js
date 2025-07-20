@@ -92,12 +92,12 @@ const Submit = () => {
       language,
     };
 
-    if (contestId) {
-      submissionData.contest = contestId;
-    }
+    const url = contestId
+      ? `/contests/${contestId}/problems/${problemId}/submit/`
+      : "/submit/";
 
     try {
-      const res = await axios.post("/submit/", submissionData);
+      const res = await axios.post(url, submissionData);
       setVerdictDetails({
         verdict: res.data.verdict,
         output: res.data.sample_output,
@@ -105,7 +105,8 @@ const Submit = () => {
       });
       setOutput(""); // Clear output from run
     } catch (err) {
-      alert("Error submitting code");
+      const errorMessage = err.response?.data?.error || "An unknown error occurred.";
+      alert(`Submission failed: ${errorMessage}`);
       setVerdictDetails(null);
     }
   };
