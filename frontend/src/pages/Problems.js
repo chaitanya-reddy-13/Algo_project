@@ -38,7 +38,7 @@ const Problems = () => {
             <div>{problem.title}</div>
             <div className={getDifficultyClass(problem.difficulty)}>{problem.difficulty}</div>
             <div>
-              <Link to={`/submit/${problem.id}`} className="btn btn-sm btn-outline-primary">Solve</Link>
+              <Link to={`/problem/${problem.id}/submit`} className="btn btn-sm btn-outline-primary">Solve</Link>
             </div>
           </div>
         ))}
