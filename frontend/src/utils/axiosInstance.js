@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://65.0.127.55/api/", // Use environment variable for API base URL
+  baseURL: "http://65.0.127.55/", // Use environment variable for API base URL
 });
 
 instance.interceptors.request.use(

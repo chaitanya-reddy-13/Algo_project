@@ -9,7 +9,7 @@ const ContestDetail = () => {
   const [timeLeft, setTimeLeft] = useState(null);
 
   useEffect(() => {
-    axios.post(`contests/${id}/enter/`).then((res) => {
+    axios.post(`/api/contests/${id}/enter/`).then((res) => {
       const start = new Date(res.data.start_time);
       const duration = res.data.duration_minutes * 60 * 1000;
       const endTime = new Date(start.getTime() + duration);
@@ -28,7 +28,7 @@ const ContestDetail = () => {
       return () => clearInterval(interval);
     });
 
-    axios.get(`contests/${id}/problems/`).then((res) => {
+    axios.get(`/api/contests/${id}/problems/`).then((res) => {
       setProblems(res.data);
     });
   }, [id]);

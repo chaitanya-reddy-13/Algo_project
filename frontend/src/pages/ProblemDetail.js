@@ -7,7 +7,7 @@ const ProblemDetail = () => {
   const [problem, setProblem] = useState(null);
 
   useEffect(() => {
-    axios.get(`problems/${id}/`).then(res => setProblem(res.data));
+    axios.get(`/api/problems/${id}/`).then(res => setProblem(res.data));
   }, [id]);
 
   return (

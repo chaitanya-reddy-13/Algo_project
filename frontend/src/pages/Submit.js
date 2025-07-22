@@ -15,7 +15,7 @@ const Submit = () => {
 
   useEffect(() => {
     if (problemId) {
-      axios.get(`/problems/${problemId}/`)
+      axios.get(`/api/problems/${problemId}/`)
         .then(res => {
           setProblem(res.data);
           const firstSample = res.data.testcases.find(tc => tc.is_sample);
@@ -29,7 +29,7 @@ const Submit = () => {
 
   const handleRun = async () => {
     try {
-      const res = await axios.post("/submit/", {
+      const res = await axios.post("/api/submit/", {
         problem: problemId,
         code,
         language,
@@ -51,7 +51,7 @@ const Submit = () => {
     };
 
     try {
-      const res = await axios.post("/submit/", submissionData);
+      const res = await axios.post("/api/submit/", submissionData);
       setVerdictDetails({
         verdict: res.data.verdict,
         output: res.data.sample_output,

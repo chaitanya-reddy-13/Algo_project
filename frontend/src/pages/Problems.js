@@ -8,7 +8,7 @@ const Problems = () => {
   const [problems, setProblems] = useState([]);
 
   useEffect(() => {
-    axios.get("/problems/")
+    axios.get("/api/problems/")
       .then(res => setProblems(res.data))
       .catch(err => console.error("Failed to fetch problems", err));
   }, []);

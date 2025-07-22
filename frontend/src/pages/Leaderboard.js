@@ -5,7 +5,7 @@ const Leaderboard = () => {
   const [leaders, setLeaders] = useState([]);
 
   useEffect(() => {
-    axios.get("/leaderboard/")
+    axios.get("/api/leaderboard/")
       .then(res => setLeaders(res.data))
       .catch(err => console.error("Failed to load leaderboard", err));
   }, []);

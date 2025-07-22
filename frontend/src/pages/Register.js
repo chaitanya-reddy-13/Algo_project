@@ -11,7 +11,7 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("/register/", { username, email, password }, { headers: { 'Content-Type': 'application/json' } });
+      await axios.post("/api/register/", { username, email, password }, { headers: { 'Content-Type': 'application/json' } });
       alert("Registration successful! Please login.");
       navigate("/login");
     } catch (err) {

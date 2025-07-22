@@ -22,7 +22,7 @@ const ContestSubmit = () => {
   useEffect(() => {
     if (problemId) {
       // Fetch problem details
-      axios.get(`/problems/${problemId}/`)
+      axios.get(`/api/problems/${problemId}/`)
         .then(res => {
           setProblem(res.data);
           const firstSample = res.data.testcases.find(tc => tc.is_sample);
@@ -35,7 +35,7 @@ const ContestSubmit = () => {
 
     // Fetch contest details if contestId is present
     if (contestId) {
-      axios.get(`/contests/${contestId}/`)
+      axios.get(`/api/contests/${contestId}/`)
         .then(res => {
           setContest(res.data);
           const endTime = new Date(res.data.start_time).getTime() + res.data.duration_minutes * 60 * 1000;
@@ -68,7 +68,7 @@ const ContestSubmit = () => {
 
   const handleRun = async () => {
     try {
-      const res = await axios.post("/submit/", {
+      const res = await axios.post("/api/submit/", {
         problem: problemId,
         code,
         language,
@@ -95,8 +95,8 @@ const ContestSubmit = () => {
     };
 
     const url = contestId
-      ? `/contests/${contestId}/problems/${problemId}/submit/`
-      : "/submit/";
+      ? `/api/contests/${contestId}/problems/${problemId}/submit/`
+      : "/api/submit/";
 
     try {
       const res = await axios.post(url, submissionData);

@@ -6,7 +6,7 @@ const Submissions = () => {
   const [expandedSubmissionId, setExpandedSubmissionId] = useState(null);
 
   useEffect(() => {
-    axios.get("/submissions/")
+    axios.get("/api/submissions/")
       .then((res) => setSubmissions(res.data))
       .catch((err) => {
         console.error(err);
