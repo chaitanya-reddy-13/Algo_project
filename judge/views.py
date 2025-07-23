@@ -1,11 +1,18 @@
+import os
+import re
+from django.core.mail import send_mail
+from django.contrib.auth import get_user_model
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view, permission_classes
-from django.contrib.auth import get_user_model, authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count, Q
+
 from .run_code import run_python_code, run_cpp_code
 from .models import TestCase, Problem, Submission, Contest
 from .serializers import (
@@ -15,13 +22,27 @@ from .serializers import (
     SubmissionSerializer,
     ContestSerializer,
 )
-import re
-from django.core.mail import send_mail
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 User = get_user_model()
+
+# ✅ Login View
+class LoginAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        user = authenticate(request, email=email, password=password)
+
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            })
+        else:
+            return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 # ✅ Register API with email verification
 class RegisterView(generics.CreateAPIView):
@@ -39,28 +60,37 @@ class RegisterView(generics.CreateAPIView):
         token_generator = PasswordResetTokenGenerator()
         token = token_generator.make_token(user)
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-        domain = "http://65.0.127.55"  # or your frontend domain
-        verification_link = f"{domain}/verify-email/{uidb64}/{token}/"
 
-        subject = 'Activate Your NexCode Account'
+        # ✅ Your deployed frontend domain
+        domain = "https://algo-project-tau.vercel.app"
+        verification_link = f"{domain}/verify-email/{uidb64}/{token}"
+
+        subject = "Activate Your NexCode Account"
         message = f"""
 Hi {user.username},
 
 Thank you for signing up for NexCode!
 
-Please click the following link to activate your account:
+Please verify your email address by clicking the link below:
 
 {verification_link}
 
-If you did not create this account, please ignore this email.
+If you did not request this, please ignore this email.
 
 — NexCode Team
 """
-        send_mail(subject, message, 'noreply@nexcode.com', [user.email])
 
-        return Response({"detail": "Verification email sent. Please check your inbox."}, status=status.HTTP_201_CREATED)
+        send_mail(
+            subject,
+            message,
+            os.environ.get('EMAIL_HOST_USER'),  # ✅ Pull from .env
+            [user.email],
+            fail_silently=False
+        )
 
-# ✅ Email verification view
+        return Response({"detail": "Verification email sent."}, status=status.HTTP_201_CREATED)
+
+# ✅ Email verification
 class VerifyEmailView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -69,41 +99,17 @@ class VerifyEmailView(APIView):
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            user = None
+            return Response({"detail": "Invalid UID"}, status=status.HTTP_400_BAD_REQUEST)
 
         token_generator = PasswordResetTokenGenerator()
-        if user is not None and token_generator.check_token(user, token):
+        if token_generator.check_token(user, token):
             user.is_active = True
             user.save()
             return Response({"detail": "Email successfully verified."}, status=status.HTTP_200_OK)
         else:
             return Response({"detail": "Invalid or expired verification link."}, status=status.HTTP_400_BAD_REQUEST)
 
-# ✅ Login API using email & password
-class LoginView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        email = request.data.get("email")
-        password = request.data.get("password")
-
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        user = authenticate(request, email=email, password=password)
-        if user is not None:
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                "refresh": str(refresh),
-                "access": str(refresh.access_token),
-                "user": UserSerializer(user).data
-            })
-        else:
-            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-
-# ✅ Problem APIs
+# ✅ Problem list and detail
 class ProblemListView(generics.ListAPIView):
     queryset = Problem.objects.all()
     serializer_class = ProblemSerializer
