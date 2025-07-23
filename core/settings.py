@@ -9,10 +9,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-default-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False  # Set True for local dev, False for production
+DEBUG = True  # Set True for local dev, False for production
 
 # Add your domain or EC2 public IP here
 ALLOWED_HOSTS = ['*']
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'chaitanyaxgavinolla@gmail.com'
+EMAIL_HOST_PASSWORD = 'ufeh bphh xtsa shcv'  # 🔐 Paste app password here
+DEFAULT_FROM_EMAIL = 'NexCode <chaitanyaxgavinolla@gmail.com>'
+AUTH_USER_MODEL = 'judge.User'
 
 
 INSTALLED_APPS = [
@@ -90,7 +98,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # If you have additional static dirs
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',  # Your local static folder if any
+    #BASE_DIR / 'static',  # Your local static folder if any
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -115,4 +123,8 @@ SIMPLE_JWT = {
 
 # Load Gemini API key if you use it
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+
+# Email settings for development (prints emails to console)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@yourdomain.com'
 

@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ContestList from "./pages/ContestList";
 import ContestDetail from "./pages/ContestDetail";
+import VerifyEmail from "./pages/VerifyEmail";
 
 
 
@@ -34,6 +35,7 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/contests" element={<ContestList />} />
         <Route path="/contests/:id" element={<ContestDetail />} />
+        <Route path="/verify-email/:uidb64/:token" element={<VerifyEmail />} />
         
         
       </Routes>

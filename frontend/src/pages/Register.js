@@ -12,7 +12,9 @@ const Register = () => {
     e.preventDefault();
     try {
       await axios.post("/api/register/", { username, email, password }, { headers: { 'Content-Type': 'application/json' } });
-      alert("Registration successful! Please login.");
+      alert("Registration successful! Please check your email to verify your account.");
+      // Optionally, you can navigate to a success page or keep them on the register page
+      // navigate("/registration-success");
       navigate("/login");
     } catch (err) {
       alert("Registration failed. Try a different email or username.");

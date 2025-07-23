@@ -30,7 +30,7 @@ def _run_code_generic(code: str, input_data: str, timeout: int, language: str):
     try:
         result = subprocess.run(
             [
-                "docker", "run",
+                "/usr/bin/docker", "run",
                 "--rm",
                 "-v", f"{run_dir}:/app/user",  # mount exact dir
                 docker_image

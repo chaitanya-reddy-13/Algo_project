@@ -1,6 +1,8 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from .models import Submission, Problem, Contest, TestCase
+
+User = get_user_model()  # ✅ Use the custom user model
 
 # ✅ Register Serializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -18,19 +20,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
-
 # ✅ User Serializer
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email']
 
-
+# ✅ TestCase Serializer
 class TestCaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestCase
         fields = ['input_data', 'expected_output', 'is_sample']
-
 
 # ✅ Problem Serializer
 class ProblemSerializer(serializers.ModelSerializer):
@@ -39,7 +39,6 @@ class ProblemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Problem
         fields = ['id', 'title', 'description', 'difficulty', 'testcases']
-
 
 # ✅ Submission Serializer
 class SubmissionSerializer(serializers.ModelSerializer):
@@ -65,9 +64,12 @@ class SubmissionSerializer(serializers.ModelSerializer):
             'id', 'problem_title', 'verdict', 'sample_output',
             'expected_output', 'error_message', 'created_at'
         ]
+
     def create(self, validated_data):
         validated_data.pop('custom_input', None)
         return super().create(validated_data)
+
+# ✅ Contest Serializer
 class ContestSerializer(serializers.ModelSerializer):
     problems = ProblemSerializer(many=True)
 
