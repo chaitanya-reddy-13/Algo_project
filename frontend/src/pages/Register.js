@@ -13,7 +13,7 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("/register/", { username, email, password });
+      await axios.post("/api/register/", { username, email, password });
       alert("Registration successful! Please verify your email.");
       navigate("/login");
     } catch (err) {
