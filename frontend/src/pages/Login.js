@@ -1,3 +1,4 @@
+// frontend/src/pages/Login.js
 import React, { useState } from "react";
 import axios from "../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +7,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -16,7 +18,7 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(res.data.user));
       navigate("/");
     } catch (err) {
-      alert("Invalid credentials. Please try again.");
+      setError(err.response?.data?.detail || "Invalid credentials. Please try again.");
     }
   };
 
@@ -24,6 +26,7 @@ const Login = () => {
     <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: "85vh" }}>
       <div className="card p-4 shadow" style={{ width: "100%", maxWidth: "400px" }}>
         <h2 className="text-center text-primary mb-3">🔐 Login to NexCode</h2>
+        {error && <p className="text-danger text-center">{error}</p>}
         <form onSubmit={handleLogin}>
           <div className="mb-3">
             <label>Email address</label>

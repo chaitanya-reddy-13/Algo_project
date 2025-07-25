@@ -8,7 +8,7 @@ const Problems = () => {
   const [problems, setProblems] = useState([]);
 
   useEffect(() => {
-    axios.get("/api/problems/")
+    axios.get("/problems/")
       .then(res => setProblems(res.data))
       .catch(err => console.error("Failed to fetch problems", err));
   }, []);
@@ -38,7 +38,7 @@ const Problems = () => {
             <div>{problem.title}</div>
             <div className={getDifficultyClass(problem.difficulty)}>{problem.difficulty}</div>
             <div>
-              <Link to={`/problem/${problem.id}/submit`} className="btn btn-sm btn-outline-primary">Solve</Link>
+              <Link to={`/submit/${problem.id}`} className="btn btn-sm btn-outline-primary">Solve</Link>
             </div>
           </div>
         ))}

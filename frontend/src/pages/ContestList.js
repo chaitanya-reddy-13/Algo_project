@@ -7,7 +7,7 @@ const ContestList = () => {
   const [contests, setContests] = useState([]);
 
   useEffect(() => {
-    axios.get("/api/contests/").then((res) => setContests(res.data));
+    axios.get("contests/").then((res) => setContests(res.data));
   }, []);
 
   return (

@@ -7,7 +7,7 @@ const ProblemDetail = () => {
   const [problem, setProblem] = useState(null);
 
   useEffect(() => {
-    axios.get(`/api/problems/${id}/`).then(res => setProblem(res.data));
+    axios.get(`problems/${id}/`).then(res => setProblem(res.data));
   }, [id]);
 
   return (
@@ -17,7 +17,7 @@ const ProblemDetail = () => {
           <h2>{problem.title}</h2>
           <p><strong>Difficulty:</strong> {problem.difficulty}</p>
           <p>{problem.description}</p>
-          <Link to={`/problem/${problem.id}/submit`} className="btn btn-primary">Submit Solution</Link>
+          <Link to={`/submit/${problem.id}`} className="btn btn-primary">Submit Solution</Link>
         </>
       ) : (
         <p>Loading...</p>

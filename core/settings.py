@@ -1,8 +1,6 @@
 import os
 from pathlib import Path
 from datetime import timedelta
-from dotenv import load_dotenv
-load_dotenv()
 
 # Base directory of your project
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -11,24 +9,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-default-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # Set True for local dev, False for production
+DEBUG = False  # Set True for local dev, False for production
 
 # Add your domain or EC2 public IP here
-ALLOWED_HOSTS = [
-    '65.0.127.55',
-    'localhost',
-    '127.0.0.1',
-    'algo-project-git-main-chaitanyas-projects-88974953.vercel.app'
-]
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD') # 🔐 Paste app password here
-DEFAULT_FROM_EMAIL = 'NexCode <chaitanyaxgavinolla@gmail.com>'
-AUTH_USER_MODEL = 'judge.User'
+ALLOWED_HOSTS = ['*']
 
 
 INSTALLED_APPS = [
@@ -106,7 +90,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # If you have additional static dirs
 STATICFILES_DIRS = [
-    #BASE_DIR / 'static',  # Your local static folder if any
+    BASE_DIR / 'static',  # Your local static folder if any
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -114,10 +98,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS settings if using
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    "https://algo-project-tau.vercel.app",
-    "http://65.0.127.55",  # Backend IP, useful for local testing
-]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -135,8 +115,4 @@ SIMPLE_JWT = {
 
 # Load Gemini API key if you use it
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-
-# Email settings for development (prints emails to console)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@yourdomain.com'
 

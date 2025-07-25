@@ -1,3 +1,4 @@
+// frontend/src/pages/Register.js
 import React, { useState } from "react";
 import axios from "../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
@@ -7,17 +8,16 @@ const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("/api/register/", { username, email, password }, { headers: { 'Content-Type': 'application/json' } });
-      alert("Registration successful! Please check your email to verify your account.");
-      // Optionally, you can navigate to a success page or keep them on the register page
-      // navigate("/registration-success");
+      await axios.post("/api/register/", { username, email, password });
+      alert("Registration successful! Please verify your email.");
       navigate("/login");
     } catch (err) {
-      alert("Registration failed. Try a different email or username.");
+      setError(err.response?.data?.detail || "Registration failed. Try again.");
     }
   };
 
@@ -25,6 +25,7 @@ const Register = () => {
     <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: "85vh" }}>
       <div className="card p-4 shadow" style={{ width: "100%", maxWidth: "400px" }}>
         <h2 className="text-center text-success mb-3">📝 Register on NexCode</h2>
+        {error && <p className="text-danger text-center">{error}</p>}
         <form onSubmit={handleRegister}>
           <div className="mb-3">
             <label>Username</label>

@@ -1,8 +1,9 @@
 // frontend/src/utils/axiosInstance.js
 import axios from "axios";
 
+// Directly set the base URL since you are not using .env
 const instance = axios.create({
-  baseURL: "http://65.0.127.55/", // Use environment variable for API base URL
+  baseURL: "http://65.0.127.55/api/", // Include /api/ if your backend uses it
 });
 
 instance.interceptors.request.use(
@@ -29,10 +30,10 @@ instance.interceptors.response.use(
     ) {
       originalRequest._retry = true;
       try {
-        const res = await axios.post("http://65.0.127.55/api/token/refresh/", { refresh });
+        const res = await instance.post("token/refresh/", { refresh });
         localStorage.setItem("access", res.data.access);
         originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
-        return axios(originalRequest);
+        return instance(originalRequest);
       } catch (err) {
         localStorage.removeItem("access");
         localStorage.removeItem("refresh");
