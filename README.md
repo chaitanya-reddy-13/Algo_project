@@ -1,4 +1,4 @@
-# AlgoArena - Online Judge Platform
+# NexCode - Online Judge Platform
 
 A modern online judge platform built with Django, React, and AI assistance for competitive programming and coding education.
 
@@ -46,7 +46,7 @@ A modern online judge platform built with Django, React, and AI assistance for c
      SECRET_KEY=your-secret-key-here
      DEBUG=False
      ALLOWED_HOSTS=your-app-name.onrender.com
-     CORS_ALLOWED_ORIGINS=https://AlgoArena.vercel.app
+     CORS_ALLOWED_ORIGINS=https://NexCode.vercel.app
      OPENAI_API_KEY=your-openai-key (optional)
      ANTHROPIC_API_KEY=your-anthropic-key (optional)
      GOOGLE_AI_API_KEY=your-google-ai-key (optional)
@@ -116,7 +116,7 @@ npm run dev
 ## 📁 Project Structure
 
 ```
-AlgoArena/
+NexCode/
 ├── backend/                 # Django backend
 │   ├── core/               # Core app (users, auth)
 │   ├── problems/           # Problem management
@@ -145,7 +145,7 @@ AlgoArena/
 SECRET_KEY=your-secret-key-here
 DEBUG=False
 ALLOWED_HOSTS=your-app-name.onrender.com
-CORS_ALLOWED_ORIGINS=https://AlgoArena.vercel.app
+CORS_ALLOWED_ORIGINS=https://NexCode.vercel.app
 DATABASE_URL=postgresql://...
 OPENAI_API_KEY=your-openai-key
 ANTHROPIC_API_KEY=your-anthropic-key
