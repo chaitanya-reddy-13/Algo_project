@@ -155,14 +155,37 @@ REST_FRAMEWORK = {
 }
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',')
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000,https://nexcode-algoproject.vercel.app').split(',')
 CORS_ALLOW_CREDENTIALS = True
 
 # Add CORS headers for Render deployment
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://\w+\.vercel\.app$",
     r"^https://\w+\.onrender\.com$",
-    r"^https://AlgoArena\.vercel\.app$",
+    r"^https://nexcode-frontend\.vercel\.app$",
+    r"^https://nexcode-algoproject\.vercel\.app$",
+]
+
+# Additional CORS settings for preflight requests
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 # AI Services
